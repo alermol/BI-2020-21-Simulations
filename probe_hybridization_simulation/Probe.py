@@ -6,7 +6,9 @@ class Probe:
     def __init__(self,
                  target,
                  lenght: int):
-        pass
+        self.target = target
+        self.length = lenght
+        assert self.length <= len(target.seq), "Probe is longer than target"
 
 
     def __generate_output(self,
