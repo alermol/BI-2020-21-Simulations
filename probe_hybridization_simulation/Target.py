@@ -11,18 +11,17 @@ class Target:
         self.length = length
         self.gc_content = gc_content
         self.ALPHABET = ["A", "T", "G", "C"]
-        assert self.length >= 500, "Target size too small"
+        assert self.length >= 700, "Target size too small"
         assert 0 <= self.gc_content <= 1, "Wrong GC-content value"
 
 
     def __generate_output(self,
                           sequence: str,
                           sequence_type: str,
-                          structure: dict):
-        output = namedtuple("Target", "seq type str")
-        return output(sequence, sequence_type, structure)
-
-
+                          structure: dict,
+                          mutated: bool):
+        output = namedtuple("Target", "seq type str mutated")
+        return output(sequence, sequence_type, structure, mutated)
 
     def generate_exon_target(self):
         structure = {}
@@ -35,11 +34,12 @@ class Target:
         structure["exon1"] = [1, len(sequence)]
         output = self.__generate_output(sequence="".join(sequence),
                                         sequence_type="intonless",
-                                        structure=structure)
+                                        structure=structure,
+                                        mutated=False)
         return output
 
 
-    def generate_exon_intron_target(self, intron_number = 1):
+    def generate_exon_intron_target(self, intron_number: int = 1):
         assert intron_number > 0, ("Introns number can not be 0\n"
                                    "For generate intronless probe use "
                                    "generate_exon_target() function")
@@ -79,13 +79,12 @@ class Target:
                                                         boundaries_coord)}
         output = self.__generate_output(sequence="".join(sequence),
                                         sequence_type="contain_introns",
-                                        structure=structure)
+                                        structure=structure,
+                                        mutated=False)
         return output
 
-
-    def get_position_info(self,
-                          target,
-                          position: int):
+    @staticmethod
+    def get_position_info(self, target, position: int):
         assert 1 <= position <= len(target.seq), "Position out of sequence"
         nucleotide = target.seq[position - 1]
         area_annotation = {}
@@ -99,7 +98,8 @@ class Target:
         return output(pos=position, nucl=nucleotide, annot=area_annotation)
 
 
-    def get_fragment_info(self, target, start: int, end: int):
+    @staticmethod
+    def get_fragment_info(target, start: int, end: int):
         assert 1 <= start <= len(target.seq), "Position out of sequence"
         assert 1 <= end <= len(target.seq), "Position out of sequence"
         assert start <= end, "Start position greater or equal than end position"
@@ -130,7 +130,48 @@ class Target:
         return output(seq=target.seq[start:end],
                       start=start,
                       end=end,
-                      length=end - start + 1,
+                      length=len(target.seq[start:end]),
                       inum=sum(["intron" in i for i in selected_areas]),
                       enum=sum(["exon" in i for i in selected_areas]),
                       str=area_annotation)
+
+
+    def mutate_target(self,
+                      target,
+                      exon_hdistance: int,
+                      intron_hdistance: int):
+        """
+        Hamming distance will pe applied to each intron and exon.
+        Summary hamming distance for mutated probe can be calculated as:
+
+        (exon_hdistance * exon_number) + (intron_hdistance * intron_number)
+        """
+        assert (exon_hdistance > 0 or
+                intron_hdistance > 0), "Hamming distance must be >0"
+        exon_number = sum(["exon" in i for i in target.str.keys()])
+        intron_number = sum(["intron" in i for i in target.str.keys()])
+        general_hdist = (exon_hdistance * exon_number +
+                         intron_hdistance * intron_number)
+        assert general_hdist <= len(target.seq), "Hamming distance is too big"
+        original_seq = list(target.seq)
+        for area, coord in target.str.items():
+            if "exon" in area:
+                mutated_positions = np.random.random_integers(
+                    coord[0],
+                    high=coord[1],
+                    size=exon_hdistance)
+            else:
+                mutated_positions = np.random.random_integers(
+                    coord[0],
+                    high=coord[1],
+                    size=intron_hdistance)
+            for pos in mutated_positions:
+                original_letter = target.seq[pos - 1]
+                possible_replace = [i for i in self.ALPHABET
+                                    if i != original_letter]
+                original_seq[pos - 1] = np.random.choice(possible_replace,
+                                                     size=1)[0]
+        return self.__generate_output(sequence="".join(original_seq),
+                                      sequence_type=target.type,
+                                      structure=target.str,
+                                      mutated=True)
