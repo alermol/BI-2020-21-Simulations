@@ -52,7 +52,7 @@ class Probe:
         probe_end = probe_info.end # probe end on target sequence
         probe_structure = probe_info.adj_str
         probe_structure["vector"] = (self.length,
-                                     self.vector_len - self.length - 1)
+                                     self.vector_len + self.length - 1)
         probe_info_output = namedtuple("Probe",
                                        "seq start end ins_len str")
         return probe_info_output(seq=probe_seq,
