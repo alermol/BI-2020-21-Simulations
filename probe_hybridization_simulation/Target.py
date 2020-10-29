@@ -93,25 +93,12 @@ class Target:
                 continue
         output = namedtuple("Position_info", "pos nucl annot")
         return output(pos=position, nucl=nucleotide, annot=area_annotation)
+    
 
     @staticmethod
-    def convert_str_coordinates(target,
-                                native_structure: dict,
-                                fragment_start: int,
-                                fragment_end: int):
-        fragment_structure = {k:list(v) for k,v in native_structure.items()}
-        first_area_name = list(fragment_structure.keys())[0]
-        last_area_name = list(fragment_structure.keys())[-1]
-        fragment_structure[first_area_name][0] = fragment_start
-        fragment_structure[last_area_name][1] = fragment_end
-        adjusted_str = {k:((v[0] - fragment_start), (v[1] - fragment_start))
-                        for k,v in fragment_structure.items()}
-        return adjusted_str
-
-
-    def get_fragment_info(self, target, start: int, end: int):
-        assert 0 <= start <= len(target.seq) - 1, "Position out of sequence"
-        assert 0 <= end <= len(target.seq) - 1, "Position out of sequence"
+    def get_fragment_info(target, start: int, end: int):
+        assert 0 <= start <= (len(target.seq) - 1), "Position out of sequence"
+        assert 0 <= end <= (len(target.seq) - 1), "Position out of sequence"
         assert start <= end, "Start position greater or equal than end position"
         # find annotation of area for start position
         start_area = ""
@@ -134,19 +121,20 @@ class Target:
         end_area_index = list(target.str.keys()).index(end_area) + 1
         selected_areas = list(target.str.keys())[start_area_index:end_area_index]
         area_annotation = {area:target.str[area] for area in selected_areas}
-        adjusted_annotation = self.convert_str_coordinates(
-            target=target,
-            native_structure=area_annotation,
-            fragment_start=start,
-            fragment_end=end)
-        # generate output
+        fragment_structure = {k:list(v) for k,v in area_annotation.items()}
+        first_area_name = list(fragment_structure.keys())[0]
+        last_area_name = list(fragment_structure.keys())[-1]
+        fragment_structure[first_area_name][0] = start
+        fragment_structure[last_area_name][1] = end
+        adjusted_str = {k:((v[0] - start), (v[1] - start))
+                        for k,v in fragment_structure.items()}
         output = namedtuple("Fragment_info",
                             "seq start end native_str adj_str")
         return output(seq=target.seq[start:(end + 1)],
                       start=start,
                       end=end,
                       native_str=area_annotation,
-                      adj_str=adjusted_annotation)
+                      adj_str=adjusted_str)
 
     @staticmethod
     def __calculate_general_hdist(target,
