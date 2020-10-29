@@ -18,10 +18,9 @@ class Target:
     def __generate_output(self,
                           sequence: str,
                           sequence_type: str,
-                          structure: dict,
-                          mutated: bool):
-        output = namedtuple("Target", "seq type str mutated")
-        return output(sequence, sequence_type, structure, mutated)
+                          structure: dict):
+        output = namedtuple("Target", "seq type str")
+        return output(sequence, sequence_type, structure)
 
     def generate_exon_target(self):
         structure = {}
@@ -31,11 +30,10 @@ class Target:
         sequence = np.random.choice(self.ALPHABET,
                                     size=self.length,
                                     p=nucl_probability)
-        structure["exon1"] = [1, len(sequence)]
+        structure["exon1"] = [0, len(sequence) - 1]
         output = self.__generate_output(sequence="".join(sequence),
                                         sequence_type="intonless",
-                                        structure=structure,
-                                        mutated=False)
+                                        structure=structure)
         return output
 
 
@@ -50,12 +48,12 @@ class Target:
         sequence = np.random.choice(self.ALPHABET,
                                     size=self.length,
                                     p=nucl_probability)
-        exon_boundary = np.random.random_integers(3, high=(self.length - 2),
+        exon_boundary = np.random.random_integers(2, high=(self.length - 1),
                                                   size=intron_number * 2)
         boundaries = sorted(exon_boundary)
         # add first and last positions number in boundaries map
-        boundaries.insert(0, 1)
-        boundaries.append(self.length)
+        boundaries.insert(0, 0)
+        boundaries.append(self.length - 1)
         # generate numbers for intons and exons for structure
         numbers_structure = [[i] * 2 for i in range(1, len(boundaries) + 1)]
         del numbers_structure[-1]
@@ -79,14 +77,13 @@ class Target:
                                                         boundaries_coord)}
         output = self.__generate_output(sequence="".join(sequence),
                                         sequence_type="contain_introns",
-                                        structure=structure,
-                                        mutated=False)
+                                        structure=structure)
         return output
 
     @staticmethod
-    def get_position_info(self, target, position: int):
-        assert 1 <= position <= len(target.seq), "Position out of sequence"
-        nucleotide = target.seq[position - 1]
+    def get_position_info(target, position: int):
+        assert 0 <= position <= len(target.seq) - 1, "Position out of sequence"
+        nucleotide = target.seq[position]
         area_annotation = {}
         for annotation, boundary in target.str.items():
             if boundary[1] >= position >= boundary[0]:
@@ -97,11 +94,24 @@ class Target:
         output = namedtuple("Position_info", "pos nucl annot")
         return output(pos=position, nucl=nucleotide, annot=area_annotation)
 
-
     @staticmethod
-    def get_fragment_info(target, start: int, end: int):
-        assert 1 <= start <= len(target.seq), "Position out of sequence"
-        assert 1 <= end <= len(target.seq), "Position out of sequence"
+    def convert_str_coordinates(target,
+                                native_structure: dict,
+                                fragment_start: int,
+                                fragment_end: int):
+        fragment_structure = {k:list(v) for k,v in native_structure.items()}
+        first_area_name = list(fragment_structure.keys())[0]
+        last_area_name = list(fragment_structure.keys())[-1]
+        fragment_structure[first_area_name][0] = fragment_start
+        fragment_structure[last_area_name][1] = fragment_end
+        adjusted_str = {k:((v[0] - fragment_start), (v[1] - fragment_start))
+                        for k,v in fragment_structure.items()}
+        return adjusted_str
+
+
+    def get_fragment_info(self, target, start: int, end: int):
+        assert 0 <= start <= len(target.seq) - 1, "Position out of sequence"
+        assert 0 <= end <= len(target.seq) - 1, "Position out of sequence"
         assert start <= end, "Start position greater or equal than end position"
         # find annotation of area for start position
         start_area = ""
@@ -124,16 +134,29 @@ class Target:
         end_area_index = list(target.str.keys()).index(end_area) + 1
         selected_areas = list(target.str.keys())[start_area_index:end_area_index]
         area_annotation = {area:target.str[area] for area in selected_areas}
+        adjusted_annotation = self.convert_str_coordinates(
+            target=target,
+            native_structure=area_annotation,
+            fragment_start=start,
+            fragment_end=end)
         # generate output
         output = namedtuple("Fragment_info",
-                            "seq start end length inum enum str")
-        return output(seq=target.seq[start:end],
+                            "seq start end native_str adj_str")
+        return output(seq=target.seq[start:(end + 1)],
                       start=start,
                       end=end,
-                      length=len(target.seq[start:end]),
-                      inum=sum(["intron" in i for i in selected_areas]),
-                      enum=sum(["exon" in i for i in selected_areas]),
-                      str=area_annotation)
+                      native_str=area_annotation,
+                      adj_str=adjusted_annotation)
+
+    @staticmethod
+    def __calculate_general_hdist(target,
+                                  exon_hdistance: int,
+                                  intron_hdistance: int):
+        exon_number = sum(["exon" in i for i in target.str.keys()])
+        intron_number = sum(["intron" in i for i in target.str.keys()])
+        general_hdist = (exon_hdistance * exon_number +
+                         intron_hdistance * intron_number)
+        return general_hdist
 
 
     def mutate_target(self,
@@ -148,30 +171,29 @@ class Target:
         """
         assert (exon_hdistance > 0 or
                 intron_hdistance > 0), "Hamming distance must be >0"
-        exon_number = sum(["exon" in i for i in target.str.keys()])
-        intron_number = sum(["intron" in i for i in target.str.keys()])
-        general_hdist = (exon_hdistance * exon_number +
-                         intron_hdistance * intron_number)
+        general_hdist = self.__calculate_general_hdist(
+            target=target,
+            exon_hdistance=exon_hdistance,
+            intron_hdistance=intron_hdistance)
         assert general_hdist <= len(target.seq), "Hamming distance is too big"
         original_seq = list(target.seq)
         for area, coord in target.str.items():
             if "exon" in area:
-                mutated_positions = np.random.random_integers(
+                mutated_positions = np.random.randint(
                     coord[0],
-                    high=coord[1],
+                    high=coord[1] - 1,
                     size=exon_hdistance)
             else:
-                mutated_positions = np.random.random_integers(
+                mutated_positions = np.random.randint(
                     coord[0],
-                    high=coord[1],
+                    high=coord[1] - 1,
                     size=intron_hdistance)
             for pos in mutated_positions:
                 original_letter = target.seq[pos - 1]
                 possible_replace = [i for i in self.ALPHABET
                                     if i != original_letter]
                 original_seq[pos - 1] = np.random.choice(possible_replace,
-                                                     size=1)[0]
+                                                         size=1)[0]
         return self.__generate_output(sequence="".join(original_seq),
                                       sequence_type=target.type,
-                                      structure=target.str,
-                                      mutated=True)
+                                      structure=target.str)
