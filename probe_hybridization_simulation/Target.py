@@ -22,20 +22,6 @@ class Target:
         output = namedtuple("Target", "seq type str")
         return output(sequence, sequence_type, structure)
 
-    def generate_exon_target(self):
-        structure = {}
-        gc_probability = self.gc_content / 2
-        at_probability = (1 - self.gc_content) / 2
-        nucl_probability = ([at_probability] * 2) + ([gc_probability] * 2)
-        sequence = np.random.choice(self.ALPHABET,
-                                    size=self.length,
-                                    p=nucl_probability)
-        structure["exon1"] = [0, len(sequence) - 1]
-        output = self.__generate_output(sequence="".join(sequence),
-                                        sequence_type="intonless",
-                                        structure=structure)
-        return output
-
 
     def generate_exon_intron_target(self, intron_number: int = 1):
         assert intron_number > 0, ("Introns number can not be 0\n"
@@ -93,7 +79,7 @@ class Target:
                 continue
         output = namedtuple("Position_info", "pos nucl annot")
         return output(pos=position, nucl=nucleotide, annot=area_annotation)
-    
+
 
     @staticmethod
     def get_fragment_info(target, start: int, end: int):
@@ -121,6 +107,7 @@ class Target:
         end_area_index = list(target.str.keys()).index(end_area) + 1
         selected_areas = list(target.str.keys())[start_area_index:end_area_index]
         area_annotation = {area:target.str[area] for area in selected_areas}
+        # create adjusted annotation
         fragment_structure = {k:list(v) for k,v in area_annotation.items()}
         first_area_name = list(fragment_structure.keys())[0]
         last_area_name = list(fragment_structure.keys())[-1]
