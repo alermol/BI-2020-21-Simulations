@@ -1,8 +1,9 @@
 
 from collections import namedtuple
-from itertools import islice
+import tqdm
 
 import numpy as np
+from Bio.Seq import Seq
 
 import Target
 
@@ -14,7 +15,7 @@ class NickTranslation:
     """
     def __init__(self,
                  probe,
-                 min_len: int = 200,
+                 min_len: int = 590,
                  max_len: int = 600):
         self.probe = probe
         self.min_len = min_len
@@ -27,11 +28,13 @@ class NickTranslation:
 
     def generate_possible_fragments(self):
         fragments_pool = []
-        for k in range(self.min_len, self.max_len + 1):
+        for k in tqdm.tqdm(range(self.min_len, self.max_len + 1),
+                           desc="Fragments generation"):
             fragments = self.__sliding_window(sequence=self.probe.seq,
                                               win_size=k)
             fragments_pool += [i for i in fragments]
-        return tuple(fragments_pool)
+            fragments_pool_ss = [i[::-1] for i in fragments_pool]
+        return tuple(fragments_pool + fragments_pool_ss)
 
 
     def __sliding_window(self,
