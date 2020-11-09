@@ -9,7 +9,6 @@ import numpy as np
 import tqdm
 from Bio.Seq import Seq
 
-# import NickTranslation
 import Probe
 import Target
 
@@ -136,5 +135,5 @@ if __name__ == "__main__":
                           hybridization_threshold=0.8,
                           probe_fragment_min_len=200,
                           probe_fragment_max_len=600)
-        except:
+        except Exception:
             pass
