@@ -65,9 +65,10 @@ def main(generation_number,
     probe = target[insert_start:insert_end]
     probe = vector + probe + vector[:max_fragment_length]
 
-    result = []  # array to return any data from simulation function
+    result = np.zeros(generation_number, dtype=np.float32)
     for n in range(generation_number):
-        for t in target_pool:
+        successful_hybrisization = [None, None]
+        for idx, t in enumerate(target_pool):
             fragments = []
             while sum(list(map(len, fragments))) <= target_length:
                 length = np.random.randint(min_fragment_length,
@@ -104,12 +105,34 @@ def main(generation_number,
                 compl = calculate_complementarity(seq, target_fragment)
                 if compl > 0:
                     hybridizaton_res[pos] = compl
-    return result
+
+            if any([True for i in hybridizaton_res.values()
+                    if i >= complemenarity_thrs]):
+                successful_hybrisization[idx] = True
+            else:
+                successful_hybrisization[idx] = False
+
+
+        if (successful_hybrisization[0] == True and
+            successful_hybrisization[1] == False):
+            result[n] = 1.0  # real target only
+        elif (successful_hybrisization[0] == False and
+              successful_hybrisization[1] == True):
+            result[n] = -1.0  # mutated target only
+        elif (successful_hybrisization[0] == False and
+              successful_hybrisization[1] == False):
+            result[n] = 0.0  # no hybridization
+        else:
+            result[n] = -0.5 # both targets
+    return (np.size(result[result == 1.0]),
+            np.size(result[result == -1.0]),
+            np.size(result[result == 0.0]),
+            np.size(result[result == -0.5]))
 
 
 if __name__ == "__main__":
     np.random.seed(5671)
-    data = main(generation_number=100,
+    data = main(generation_number=50000,
                 target_length=3000,
                 target_gc=0.5,
                 target_int_num=2,
@@ -119,3 +142,13 @@ if __name__ == "__main__":
                 min_fragment_length=200,
                 max_fragment_length=600,
                 complemenarity_thrs=0.8)
+    print(
+f'''
+Experiment result:
+
+Hybridization with real target only: {data[0]}
+Hybridization with mutated target only: {data[1]}
+Hybridization with both targets: {data[2]}
+No hybridization with both targets: {data[3]}
+'''
+    )
