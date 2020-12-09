@@ -4,25 +4,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
+import sys
 
-def mutate_target(sample, hdistance):
-    mutated_sequence = list(sample)
-    positions_to_mutate = np.random.randint(low=0,
-                                            high=len(mutated_sequence) - 1,
-                                            size=hdistance)
-    for position in positions_to_mutate:
-        original_letter = mutated_sequence[position]
-        possible_replacement = [l for l in ('A', 'T', 'G', 'C')
-                                if l != original_letter]
-        mutated_sequence[position] = np.random.choice(possible_replacement,
-                                                      size=1)[0]
-    return ''.join(mutated_sequence)
+
+def mutate_target(sample, intron_divergency, introns_number):
+    mutate_target = list(sample)
+    split_positions = np.random.randint(low=0, high=len(sample),
+                                        size=introns_number * 2)
+    split_positions.sort()
+    split_positions = np.reshape(split_positions, (2, 2))
+
+    for i in split_positions:
+        changing_letters = int((i[1] - i[0] + 1) * intron_divergency)
+        pos_to_replace = np.random.randint(i[0], i[1] + 1,
+                                           size=changing_letters)
+
+        for letter in pos_to_replace:
+            possible_replacement = [l for l in ('A', 'T', 'G', 'C')
+                                    if l != sample[letter]]
+            mutate_target[letter] = np.random.choice(possible_replacement,
+                                                     size=1)[0]
+    return ''.join(mutate_target)
 
 
 def calculate_complementarity(seq1: str, seq2: str):
     complementary_pairs = list(zip("ATGC", "TACG"))
     total_len = len(seq1)
     complementary = 0
+
     for l in zip(seq1, seq2):
         if l in complementary_pairs:
             complementary += 1
@@ -32,7 +41,8 @@ def calculate_complementarity(seq1: str, seq2: str):
 def main(generation_number,
          target_length,
          target_gc,
-         mtarget_hdist,
+         target_int_num,
+         intron_divergency,
          vector_length,
          insert_length,
          min_fragment_length,
@@ -46,7 +56,7 @@ def main(generation_number,
                                  target_gc / 2])
     target = ''.join(target)
 
-    mutated_target = mutate_target(target, mtarget_hdist)
+    mutated_target = mutate_target(target, intron_divergency, target_int_num)
     target_pool = [target, mutated_target]
 
     vector = np.random.choice(('A', 'T', 'G', 'C'),
@@ -104,7 +114,8 @@ if __name__ == "__main__":
     data = main(generation_number=100,
                 target_length=3000,
                 target_gc=0.5,
-                mtarget_hdist=200,
+                target_int_num=2,
+                intron_divergency=0.5, # fraction of divergent bases in introns
                 vector_length=3000,
                 insert_length=1500,
                 min_fragment_length=200,
