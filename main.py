@@ -4,8 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
-import sys
-
 
 def mutate_target(sample, intron_divergency, introns_number):
     mutate_target = list(sample)
@@ -115,7 +113,7 @@ if __name__ == "__main__":
                 target_length=3000,
                 target_gc=0.5,
                 target_int_num=2,
-                intron_divergency=0.5, # fraction of divergent bases in introns
+                intron_divergency=0.5,  # fraction of divergent bases in introns
                 vector_length=3000,
                 insert_length=1500,
                 min_fragment_length=200,
