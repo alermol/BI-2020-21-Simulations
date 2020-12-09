@@ -10,7 +10,7 @@ def mutate_target(sample, intron_divergency, introns_number):
     split_positions = np.random.randint(low=0, high=len(sample),
                                         size=introns_number * 2)
     split_positions.sort()
-    split_positions = np.reshape(split_positions, (2, 2))
+    split_positions = np.reshape(split_positions, (introns_number, 2))
 
     for i in split_positions:
         changing_letters = int((i[1] - i[0] + 1) * intron_divergency)
@@ -135,8 +135,8 @@ if __name__ == "__main__":
     data = main(generation_number=50000,
                 target_length=3000,
                 target_gc=0.5,
-                target_int_num=2,
-                intron_divergency=0.5,  # fraction of divergent bases in introns
+                target_int_num=4,
+                intron_divergency=0.3,  # fraction of divergent bases in introns
                 vector_length=3000,
                 insert_length=1500,
                 min_fragment_length=200,
@@ -148,7 +148,7 @@ Experiment result:
 
 Hybridization with real target only: {data[0]}
 Hybridization with mutated target only: {data[1]}
-Hybridization with both targets: {data[2]}
-No hybridization with both targets: {data[3]}
+Hybridization with both targets: {data[3]}
+No hybridization with both targets: {data[2]}
 '''
     )
