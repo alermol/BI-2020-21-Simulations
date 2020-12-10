@@ -4,25 +4,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
+import sys
+import tqdm
 
-def mutate_target(sample, intron_divergency, introns_number):
-    mutate_target = list(sample)
-    split_positions = np.random.randint(low=0, high=len(sample),
+
+def mutate_hyb_site(site_seq, introns_divergency, introns_number):
+    mutated_site_seq = list(site_seq)
+    split_positions = np.random.randint(low=0, high=len(site_seq),
                                         size=introns_number * 2)
     split_positions.sort()
     split_positions = np.reshape(split_positions, (introns_number, 2))
 
     for i in split_positions:
-        changing_letters = int((i[1] - i[0] + 1) * intron_divergency)
+        changing_letters = int((i[1] - i[0] + 1) * introns_divergency)
         pos_to_replace = np.random.randint(i[0], i[1] + 1,
                                            size=changing_letters)
 
         for letter in pos_to_replace:
             possible_replacement = [l for l in ('A', 'T', 'G', 'C')
-                                    if l != sample[letter]]
-            mutate_target[letter] = np.random.choice(possible_replacement,
-                                                     size=1)[0]
-    return ''.join(mutate_target)
+                                    if l != site_seq[letter]]
+            mutated_site_seq[letter] = np.random.choice(possible_replacement,
+                                                        size=1)[0]
+    return ''.join(mutated_site_seq)
 
 
 def calculate_complementarity(seq1: str, seq2: str):
@@ -37,40 +40,38 @@ def calculate_complementarity(seq1: str, seq2: str):
 
 
 def main(generation_number,
-         target_length,
-         target_gc,
-         target_int_num,
+         site_length,
+         gc_content,
+         site_intron_number,
          intron_divergency,
          vector_length,
-         insert_length,
          min_fragment_length,
          max_fragment_length,
          complemenarity_thrs):
-    target = np.random.choice(('A', 'T', 'G', 'C'),
-                              size=target_length,
-                              p=[(1 - target_gc) / 2,
-                                 (1 - target_gc) / 2,
-                                 target_gc / 2,
-                                 target_gc / 2])
-    target = ''.join(target)
+    hybridization_site = np.random.choice(('A', 'T', 'G', 'C'),
+                                          size=site_length,
+                                          p=[(1 - gc_content) / 2,
+                                             (1 - gc_content) / 2,
+                                             gc_content / 2,
+                                             gc_content / 2])
+    hybridization_site = ''.join(hybridization_site)
 
-    mutated_target = mutate_target(target, intron_divergency, target_int_num)
-    target_pool = [target, mutated_target]
+    mutated_hyb_site = mutate_hyb_site(hybridization_site,
+                                       intron_divergency,
+                                       site_intron_number)
+    hybrid_sites = [hybridization_site, mutated_hyb_site]
 
     vector = np.random.choice(('A', 'T', 'G', 'C'),
                               size=vector_length)
     vector = ''.join(vector)
-    insert_start = int(np.random.randint(0, target_length - insert_length + 1))
-    insert_end = int(insert_start + insert_length)
-    probe = target[insert_start:insert_end]
-    probe = vector + probe + vector[:max_fragment_length]
+    probe = vector + hybridization_site + vector[:max_fragment_length]
 
-    result = np.zeros(generation_number, dtype=np.float32)
-    for n in range(generation_number):
+    result = {'R': 0, 'M': 0, 'B': 0, 'N': 0}
+    for n in tqdm.tqdm(range(generation_number)):
         successful_hybrisization = [None, None]
-        for idx, t in enumerate(target_pool):
+        for idx, t in enumerate(hybrid_sites):
             fragments = []
-            while sum(list(map(len, fragments))) <= target_length:
+            while sum(list(map(len, fragments))) <= site_length:
                 length = np.random.randint(min_fragment_length,
                                            max_fragment_length + 1)
                 length = int(length)
@@ -82,8 +83,8 @@ def main(generation_number,
 
             fragments = fragments[:-1]
             ns = [
-                'N' for _ in range(target_length - sum(list(map(len,
-                                                                fragments))))
+                'N' for _ in range(site_length - sum(list(map(len,
+                                                              fragments))))
             ]
             fragments.extend(ns)
             np.random.shuffle(fragments)
@@ -112,43 +113,75 @@ def main(generation_number,
             else:
                 successful_hybrisization[idx] = False
 
-
         if (successful_hybrisization[0] == True and
-            successful_hybrisization[1] == False):
-            result[n] = 1.0  # real target only
+                successful_hybrisization[1] == False):
+            result['R'] += 1  # real target only
         elif (successful_hybrisization[0] == False and
               successful_hybrisization[1] == True):
-            result[n] = -1.0  # mutated target only
+            result['M'] += 1  # mutated target only
         elif (successful_hybrisization[0] == False and
               successful_hybrisization[1] == False):
-            result[n] = 0.0  # no hybridization
+            result['N'] += 1  # no hybridization
         else:
-            result[n] = -0.5 # both targets
-    return (np.size(result[result == 1.0]),
-            np.size(result[result == -1.0]),
-            np.size(result[result == 0.0]),
-            np.size(result[result == -0.5]))
+            result['B'] += 1  # both targets
+    return result
 
 
 if __name__ == "__main__":
-    np.random.seed(5671)
-    data = main(generation_number=50000,
-                target_length=3000,
-                target_gc=0.5,
-                target_int_num=4,
-                intron_divergency=0.3,  # fraction of divergent bases in introns
-                vector_length=3000,
-                insert_length=1500,
-                min_fragment_length=200,
-                max_fragment_length=600,
-                complemenarity_thrs=0.8)
-    print(
-f'''
-Experiment result:
+    # np.random.seed(5671)
 
-Hybridization with real target only: {data[0]}
-Hybridization with mutated target only: {data[1]}
-Hybridization with both targets: {data[3]}
-No hybridization with both targets: {data[2]}
-'''
-    )
+    int_numbs = np.arange(0, 6, 1, dtype=int)
+    ry_array = np.zeros(int_numbs.shape)
+    my_array = np.zeros(int_numbs.shape)
+
+    internal_iterations = 50
+
+    for i in tqdm.tqdm(int_numbs):
+        ry_array_tmp = np.zeros(internal_iterations, dtype='uint8')
+        my_array_tmp = np.zeros(internal_iterations, dtype='uint8')
+        intr_numb = np.full(internal_iterations, i)
+        for ii in tqdm.tqdm(range(internal_iterations)):
+            data = main(generation_number=1000000,
+                        site_length=1100,
+                        gc_content=0.32,
+                        site_intron_number=i,
+                        intron_divergency=0.5,  # fraction of divergent bases in introns
+                        vector_length=3000,
+                        min_fragment_length=100,
+                        max_fragment_length=1100,
+                        complemenarity_thrs=0.2)
+            ry_array_tmp[ii] = data['R']
+            my_array_tmp[ii] = data['M']
+        ry_array[i] = np.mean(ry_array_tmp)
+        my_array[i] = np.mean(my_array_tmp)
+        plt.errorbar(i, np.mean(ry_array_tmp), ecolor='green',
+                     yerr=np.std(ry_array_tmp), elinewidth=1, capsize=3)
+        plt.errorbar(i, np.mean(my_array_tmp), ecolor='blue',
+                     yerr=np.std(my_array_tmp), elinewidth=1, capsize=3)
+
+    plt.plot(int_numbs, ry_array, c='green', marker='.', linestyle='--')
+    plt.plot(int_numbs, my_array, c='blue', marker='.', linestyle='--')
+
+    plt.grid()
+    plt.legend(['Успешные гибридизации с реальным таргетом',
+                'Успешные гибридизации с мутантным таргетом'],
+               loc='upper center', fontsize='xx-small',
+               bbox_to_anchor=(0.5, 1.06), shadow=True, ncol=2)
+    plt.title(('Зависимость количества событий гибридизации\n'
+               'от количества интронов в пробе'), pad=17.0)
+    plt.xticks(int_numbs)
+    plt.xlabel('Количество интронов')
+    plt.ylabel('Количество событий успешной гибридизации')
+    plt.savefig('plot5.png', dpi=600)
+    plt.close()
+
+    # print(
+# f'''
+# Experiment result:
+#
+# Hybridization with real target only: {data[0]}
+# Hybridization with mutated target only: {data[1]}
+# Hybridization with both targets: {data[3]}
+# No hybridization with both targets: {data[2]}
+# '''
+    # )
