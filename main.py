@@ -1,3 +1,10 @@
+'''
+Author: Aleksey Ermolaev
+
+Script for simulation of hybridization of DNA-probe with DNA-target
+in Tyramide-FISH method
+'''
+
 from Bio.Seq import Seq
 
 import numpy as np
