@@ -2,7 +2,7 @@ from Bio.Seq import Seq
 
 import numpy as np
 import matplotlib.pyplot as plt
-import itertoolss
+import itertools
 
 
 def mutate_hyb_site(site_seq, introns_divergency, introns_number):
@@ -62,6 +62,20 @@ def main(iterations_number,
          min_fragment_length,
          max_fragment_length,
          complemenarity_thrs):
+    '''Does simualtion iterations and return the result
+
+    Keyword arguments:
+    iteration_number -- number of iterations to select fragments (int)
+    site_length -- length of hybridization site (int)
+    gc_content -- GC-content of hybridization site (float)
+    site_intron_number -- number of introns in hybridization site (int)
+    intron_divergency -- fraction of differ letters in introns (float)
+    vector_length -- length of supplementary sequence for probe (int)
+    min_fragment_length -- minimal length of probe fragment (int)
+    max_fragment_length -- maximal length of probe fragment (int)
+    complemenarity_thrs -- threshold of complementarity for stable hybrid
+                           formation (float)
+    '''
     hybridization_site = np.random.choice(('A', 'T', 'G', 'C'),
                                           size=site_length,
                                           p=[(1 - gc_content) / 2,
