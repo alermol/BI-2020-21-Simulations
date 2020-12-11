@@ -27,7 +27,15 @@ def mutate_hyb_site(site_seq, introns_divergency, introns_number):
     return ''.join(mutated_site_seq)
 
 
-def calculate_complementarity(seq1: str, seq2: str):
+def calculate_complementarity(seq1, seq2):
+    '''Return percent of complementary pairs in two sequences
+
+    Keyword arguments:
+    seq1 -- first sequence
+    seq2 -- second sequence
+
+    Both first and second sequences must be an equal length
+    '''
     complementary_pairs = list(zip("ATGC", "TACG"))
     total_len = len(seq1)
     complementary = 0
