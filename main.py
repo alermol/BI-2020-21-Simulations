@@ -2,15 +2,22 @@ from Bio.Seq import Seq
 
 import numpy as np
 import matplotlib.pyplot as plt
-import itertools
+import itertoolss
 
 
 def mutate_hyb_site(site_seq, introns_divergency, introns_number):
-    '''
+    '''Return sequence with changed fraction of letters in introns (mutated)
+
+    Keyword arguments:
+    site_seq -- sequence to mutate (str)
+    introns_divergency -- fraction of letters to change in each intron (float)
+                          [0.0...1.0]
+    introns_number -- number of areas to intron location (int)
     '''
     mutated_site_seq = list(site_seq)
     split_positions = sorted(np.random.randint(low=0, high=len(site_seq),
                                                size=introns_number * 2))
+    # pairs of values - introns boundaries
     split_positions = np.reshape(split_positions, (introns_number, 2))
 
     for i in split_positions:
@@ -31,8 +38,8 @@ def calculate_complementarity(seq1, seq2):
     '''Return percent of complementary pairs in two sequences
 
     Keyword arguments:
-    seq1 -- first sequence
-    seq2 -- second sequence
+    seq1 -- first sequence (str)
+    seq2 -- second sequence (str)
 
     Both first and second sequences must be an equal length
     '''
@@ -46,7 +53,7 @@ def calculate_complementarity(seq1, seq2):
     return complementary / total_len
 
 
-def main(generation_number,
+def main(iterations_number,
          site_length,
          gc_content,
          site_intron_number,
@@ -55,7 +62,6 @@ def main(generation_number,
          min_fragment_length,
          max_fragment_length,
          complemenarity_thrs):
-
     hybridization_site = np.random.choice(('A', 'T', 'G', 'C'),
                                           size=site_length,
                                           p=[(1 - gc_content) / 2,
@@ -75,7 +81,7 @@ def main(generation_number,
     probe = vector + hybridization_site + vector[:max_fragment_length]
 
     result = {'R': 0, 'M': 0, 'B': 0, 'N': 0}
-    for n in tqdm.tqdm(range(generation_number)):
+    for n in tqdm.tqdm(range(iterations_number)):
         successful_hybridization = [None, None]
         for idx, t in enumerate(hybrid_sites):
             fragments = []
@@ -137,7 +143,7 @@ def main(generation_number,
 
 if __name__ == "__main__":
     np.random.seed(5671)
-    data = main(generation_number=10,
+    data = main(iterations_number=10,
                 site_length=1100,
                 gc_content=0.32,
                 site_intron_number=2,
