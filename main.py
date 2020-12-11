@@ -11,7 +11,6 @@ def mutate_hyb_site(site_seq, introns_divergency, introns_number):
     Keyword arguments:
     site_seq -- sequence to mutate (str)
     introns_divergency -- fraction of letters to change in each intron (float)
-                          [0.0...1.0]
     introns_number -- number of areas to intron location (int)
     '''
     mutated_site_seq = list(site_seq)
