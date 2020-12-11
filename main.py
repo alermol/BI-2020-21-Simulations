@@ -85,7 +85,7 @@ def main(iterations_number,
     prob = [(1 - gc_content) / 2] * 2 + [gc_content / 2] * 2
     hybridization_site = np.random.choice(('A', 'T', 'G', 'C'),
                                           size=site_length,
-                                          p = prob)
+                                          p=prob)
     hybridization_site = ''.join(hybridization_site)
 
     mutated_hyb_site = mutate_hyb_site(hybridization_site,
