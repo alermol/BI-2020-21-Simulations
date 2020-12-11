@@ -8,7 +8,6 @@ in Tyramide-FISH method
 from Bio.Seq import Seq
 
 import numpy as np
-import matplotlib.pyplot as plt
 import itertools
 
 
@@ -97,6 +96,7 @@ def main(iterations_number,
                               size=vector_length)
     vector = ''.join(vector)
     probe = vector + hybridization_site + vector[:max_fragment_length]
+    probe = str(Seq(probe).complement())
 
     result = {'R': 0, 'M': 0, 'B': 0, 'N': 0}
     for n in range(iterations_number):
@@ -129,7 +129,7 @@ def main(iterations_number,
                 start = sum(map(len, fragments[:f]))
                 end = start + len(fragments[f]) - 1
                 key = (start, end)
-                value = str(Seq(fragments[f]).complement())
+                value = fragments[f]
                 pos_fragments[key] = value
 
             hybridizaton_res = {}
