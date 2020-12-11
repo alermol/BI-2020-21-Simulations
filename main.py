@@ -26,9 +26,9 @@ def mutate_hyb_site(site_seq, introns_divergency, introns_number):
                                            size=changing_letters)
 
         for letter in pos_to_replace:
-            possible_replacement = list(
-                {'A', 'T', 'G', 'C'}.remove(site_seq[letter])
-            )
+            possible_replacement = {'A', 'T', 'G', 'C'}
+            possible_replacement.remove(site_seq[letter])
+            possible_replacement = list(possible_replacement)
             mutated_site_seq[letter] = np.random.choice(possible_replacement,
                                                         size=1)[0]
     return ''.join(mutated_site_seq)
@@ -95,7 +95,7 @@ def main(iterations_number,
     probe = vector + hybridization_site + vector[:max_fragment_length]
 
     result = {'R': 0, 'M': 0, 'B': 0, 'N': 0}
-    for n in tqdm.tqdm(range(iterations_number)):
+    for n in range(iterations_number):
         successful_hybridization = [None, None]
         for idx, t in enumerate(hybrid_sites):
             fragments = []
