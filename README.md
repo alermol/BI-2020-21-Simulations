@@ -1,2 +1,6 @@
 # BI-2020-21-Simulations
-Repository contains scripts for half-year simulation project in BI
+
+## Aim of the project
+
+To simulate relation of hybridization events number from various parameters
+of Tyramide-FISH exepriment and to find intriguing patterns.
