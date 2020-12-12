@@ -5,10 +5,10 @@ Script for simulation of hybridization of DNA-probe with DNA-target
 in Tyramide-FISH method
 '''
 
-from Bio.Seq import Seq
+import itertools
 
 import numpy as np
-import itertools
+from Bio.Seq import Seq
 
 
 def mutate_hyb_site(site_seq, introns_divergency, introns_number):
