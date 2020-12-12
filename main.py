@@ -102,6 +102,7 @@ def main(iterations_number,
     for n in range(iterations_number):
         successful_hybridization = [None, None]
         for idx, t in enumerate(hybrid_sites):
+            # collect fragments while its length's sum <= site_length
             fragments = []
             while sum(list(map(len, fragments))) <= site_length:
                 length = np.random.randint(min_fragment_length,
@@ -114,16 +115,19 @@ def main(iterations_number,
                 fragments.append(probe[start:(start + length + 1)])
 
             fragments = fragments[:-1]
+            # add N at empty positions
             ns = [
                 'N' for _ in range(site_length - sum(list(map(len,
                                                               fragments))))
             ]
             fragments.extend(ns)
             np.random.shuffle(fragments)
+            # create continious fragments either from N or ATGC
             fragments = [
                 ''.join(list(i)) for _, i in itertools.groupby(fragments)
             ]
 
+            # calculate coordinates of each fragment
             pos_fragments = {}
             for f in range(len(fragments)):
                 start = sum(map(len, fragments[:f]))
@@ -132,6 +136,7 @@ def main(iterations_number,
                 value = fragments[f]
                 pos_fragments[key] = value
 
+            # calculate fragment's hybridization result
             hybridizaton_res = {}
             for pos, seq in pos_fragments.items():
                 target_fragment = t[pos[0]:(pos[1] + 1)]
@@ -170,3 +175,4 @@ if __name__ == "__main__":
                 min_fragment_length=100,
                 max_fragment_length=1100,
                 complemenarity_thrs=0.8)
+    # add any code to do something with simulation result
