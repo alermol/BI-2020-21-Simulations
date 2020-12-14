@@ -11,7 +11,7 @@ For hybridization outcomes simulation Monte-Carlo simulation is use.
 
 ## Requirements
 
-Script writed on Python3, list of all required Python packages in 
+Script writed on Python3, list of all required Python packages in
 `requirements.txt` file and can be installed in virtual environment using pip
 
 ## Simulation output
@@ -25,7 +25,8 @@ save in table (install `pandas` first), draw plots using `pyplot` and
 
 ## References
 
-Article about influences of introns in probe at probe specificity  
+Article about influences of introns in probe at probe specificity
+
 Romanov, D., Divashuk, M., Havey, M. J., & Khrustaleva, L. (2015).
 Tyramide-FISH mapping of single genes for development of an integrated
 recombination and cytogenetic map of chromosome 5 of Allium cepa.
