@@ -51,8 +51,6 @@ save in table (install `pandas` first), draw plots using `pyplot` and
 
 Each line is one simulation with certain number of iteration
 
-<!-- [Table example](example_result/example_table.tsv) -->
-
 #### Plot form
 
 As a result of a simulation a plot like this can be created.
