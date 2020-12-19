@@ -21,10 +21,10 @@ Script writed on Python3, list of all required Python packages in
 
 ## Simulation output
 
-As a main output of all iterations the function in script is returns
+As a main output of all iterations the function in script returns
 a dictionary with number of hybridization events of four types: real target
 hybridization only, mutate target hybridization only, both targets
-hybridization only and no hybridization. You can use this output as you want:
+hybridization and no hybridization. You can use this output as you want:
 save in table (install `pandas` first), draw plots using `pyplot` and
 `matplotlib` etc.
 
@@ -66,12 +66,11 @@ As a result of a simulation a plot like this can be created.
 
 In our simulation it is seen that hybridization events number with mutated
 target is less than hybridization events number with real target even after
-including in probe a singe intron fragment. Although standart deviation
-(whiskers on plot) shows that hybridization events number with mutated target
-is not significantly differ from hybridization events number with real target
-for all introns number in probe, we can see some pattern to decrease for
-mutated target. This simulation will be improved to achieve result that
-better match to reality.
+including in probe a singe intron fragment. Based on standart deviation
+(whiskers on plot) we can not to confirm presence of statistically significant
+difference in successful hybridization events number with real and
+mutated target for intron-contained probe. This simulation will be improved
+to achieve result that better match to reality.
 
 ![result_plot](results/result_plot_thumb.jpeg)
 
