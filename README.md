@@ -9,6 +9,11 @@ of Tyramide-FISH exepriment and to find intriguing patterns.
 
 For hybridization outcomes simulation Monte-Carlo approach is used.
 
+On each iteration set of probe fragments of different length is picked and
+a fraction of complementary bases between fragment and target is caclulated.
+If at least one fragment from set have equal or greater value (fraction)
+threshold than iteration is successful.
+
 ## Requirements
 
 Script writed on Python3, list of all required Python packages in
@@ -63,7 +68,7 @@ In our simulation it is seen that hybridization events number with mutated
 target is less than hybridization events number with real target even after
 including in probe a singe intron fragment. Although standart deviation
 (whiskers on plot) shows that hybridization events number with mutated target
-is not significantly differ from hybridization events number with real target 
+is not significantly differ from hybridization events number with real target
 for all introns number in probe, we can see some pattern to decrease for
 mutated target. This simulation will be improved to achieve result that
 better match to reality.
