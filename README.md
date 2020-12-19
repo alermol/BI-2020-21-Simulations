@@ -7,12 +7,28 @@ of Tyramide-FISH exepriment and to find intriguing patterns.
 
 ## Methods
 
+Tyramide-FISH is mostly used for visualization of small targets – genes or
+markers. In most cases genes are included in gene families and it is tricky
+to design a probe to visualize only one member of a multigenic family. The
+Tyramide-FISH method has shown that including intron in a probe allows us to
+visualize a specific gene from a multigenic family. In our work we tried to
+figure out the influence of different introns on hybridization specificity.
+
+Tyramide-FISH method specificity of hybridization is defined by a stringency
+that limits the percentage of matches and mismatches between probe and target
+nucleic acid that are allowed to occur without the double helix hybrid falling
+apart. The most commonly using stringency is 80%. At this stringency a hybrid
+with 80% bases or more along the probe-target hybrid being complementary and
+20% or less mismatched, will remain stable. Hybrid molecules with 80% or less
+homology do not form or dissociate immediately.
+
 For hybridization outcomes simulation Monte-Carlo approach is used.
 
-On each iteration set of probe fragments of different length is picked and
-a fraction of complementary bases between fragment and target is caclulated.
-If at least one fragment from set have equal or greater value (fraction)
-threshold than iteration is successful.
+Before generation script generate random target and random probe from
+this target. On each iteration set of probe fragments of different length
+is picked and a fraction of complementary bases between fragment and target 
+is caclulated. If at least one fragment from set have equal or greater value
+(fraction) threshold than iteration is successful.
 
 ## Requirements
 
