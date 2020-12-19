@@ -11,8 +11,10 @@ Tyramide-FISH is mostly used for visualization of small targets – genes or
 markers. In most cases genes are included in gene families and it is tricky
 to design a probe to visualize only one member of a multigenic family. The
 Tyramide-FISH method has shown that including intron in a probe allows us to
-visualize a specific gene from a multigenic family. In our work we tried to
-figure out the influence of different introns on hybridization specificity.
+visualize a specific gene from a multigenic family
+([Romanov *et al*., 2015](https://pubmed.ncbi.nlm.nih.gov/26158384/)).
+In our work we tried to figure out the influence of different introns on
+hybridization specificity.
 
 Tyramide-FISH method specificity of hybridization is defined by a stringency
 that limits the percentage of matches and mismatches between probe and target
@@ -94,9 +96,9 @@ to achieve result that better match to reality.
 
 ## References
 
-Article about influences of introns in probe at probe specificity
-
 Romanov, D., Divashuk, M., Havey, M. J., & Khrustaleva, L. (2015).
 Tyramide-FISH mapping of single genes for development of an integrated
 recombination and cytogenetic map of chromosome 5 of Allium cepa.
 Genome, 58(3), 111-119.
+[[PubMed](https://pubmed.ncbi.nlm.nih.gov/26158384/)]
+[[DOI](https://www.doi.org/10.1139/gen-2015-0019)]
