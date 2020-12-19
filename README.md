@@ -1,4 +1,4 @@
-# BI-2020-21-Simulations
+# Tyramide-FISH hybridization simulation
 
 ## Aim of the project
 
